@@ -1,0 +1,5 @@
+{
+    "SECRET_KEY": "AGIAHOFSDMKnioduafasf_02312dsmsdvscwfweugr09wcareuvaeura487 4ye8w75v98wervewn7rvawmerwj",
+    "ALGORITHM": "HS256",
+    "ACCESS_TOKEN_EXPIRE_MINUTES": 10800
+}
