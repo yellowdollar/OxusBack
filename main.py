@@ -21,6 +21,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan = lifespan,
+    root_path='/api',
+    openapi_url='/openapi.json',
+    docs_url='/docs',
 )
 app.include_router(router = news_router)
 app.include_router(router = users_router)
