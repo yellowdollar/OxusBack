@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    lifespan = lifespan
+    lifespan = lifespan,
     root_path='/api',
     openapi_url='/openapi.json',
     docs_url='/docs',
