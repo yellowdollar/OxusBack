@@ -79,7 +79,7 @@ async def add_new(
     }
 
 
-    photo_add = await photo_service.add_photo(token = token, data = photo_data)
+    photo_add = await photo_service.add_photo(data = photo_data)
 
     insert_news_photo_path = await news_service.update_new(id = int(result[0].id), data = {'photo_id': photo_add[0].id})
 
