@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 from api.news import news_router
 from api.auth import users_router
+from api.forum import forum_router
+from api.speakers import speakers_router
 
 from models.photo import PhotoModel
 from models.news import NewsModel
@@ -27,6 +29,8 @@ app = FastAPI(
 )
 app.include_router(router = news_router)
 app.include_router(router = users_router)
+app.include_router(router = forum_router)
+app.include_router(router = speakers_router)
 
 app.add_middleware ( 
     CORSMiddleware,

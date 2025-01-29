@@ -16,22 +16,7 @@ class PhotoService:
     def __init__(self, photo_service: AbstractRepository):
         self.photo_service: AbstractRepository = photo_service()
 
-    async def add_photo(self, token: str, data: dict):
-        try:
-            to_decode = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
-            user_id = to_decode.get('id')
-
-            if not user_id:
-                return {
-                    'messsage': 'Not Authorized',
-                    'status_code': 401
-                }
-        except InvalidTokenError:
-            return {
-                'message': 'Ivalid Token Error',
-                'status_code': 401
-            }
-        
+    async def add_photo(self, data: dict):
         result = await self.photo_service.add(data = data)
         return result
 
