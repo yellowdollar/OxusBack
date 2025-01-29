@@ -9,6 +9,7 @@ from api.forum import forum_router
 from api.speakers import speakers_router
 from api.honorary import hon_router
 from api.program import program_router
+from api.regist import regist_router
 
 from models.photo import PhotoModel
 from models.news import NewsModel
@@ -35,6 +36,7 @@ app.include_router(router = forum_router)
 app.include_router(router = speakers_router)
 app.include_router(router = hon_router)
 app.include_router(router = program_router)
+app.include_router(router = regist_router)
 
 app.add_middleware ( 
     CORSMiddleware,

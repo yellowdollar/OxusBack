@@ -19,6 +19,9 @@ from repositories.honorary import HonoraryRepository
 from services.program import ProgramService
 from repositories.program import ProgramRepository
 
+from services.regist import RegistService
+from repositories.regist import RegistRepository
+
 def news_services():
     return NewService(NewsRepository)
 
@@ -39,3 +42,6 @@ def honorary_service():
 
 def program_service():
     return ProgramService(ProgramRepository)
+
+def regist_service():
+    return RegistService(RegistRepository)
