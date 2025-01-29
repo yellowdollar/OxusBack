@@ -13,6 +13,12 @@ from repositories.forum import ForumRepository
 from services.speakers import SpeakersService
 from repositories.speakers import SpeakersRepository
 
+from services.honorary import HonoraryService
+from repositories.honorary import HonoraryRepository
+
+from services.program import ProgramService
+from repositories.program import ProgramRepository
+
 def news_services():
     return NewService(NewsRepository)
 
@@ -27,3 +33,9 @@ def forum_service():
 
 def speakers_service():
     return SpeakersService(SpeakersRepository)
+
+def honorary_service():
+    return HonoraryService(HonoraryRepository)
+
+def program_service():
+    return ProgramService(ProgramRepository)

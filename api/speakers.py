@@ -79,6 +79,7 @@ async def add_new_speaker(
 @speakers_router.get('/get_speakers')
 async def get_speakers(
     speakers_service: Annotated[SpeakersService, Depends(speakers_service)],
+    photo_service: Annotated[PhotoService, Depends(photo_service)],
     id: int = ...
 ):
     filters = {
@@ -86,4 +87,18 @@ async def get_speakers(
     }
 
     result = await speakers_service.get_speakers_filters(filters = filters)
-    return result
+
+    result_list = []
+    for each in result:
+        photo = await photo_service.get_photo(id = each.photo_id)
+
+        data = {
+            'id': each.id,
+            'name': each.name,
+            'work_place': each.work_place,
+            'photo_path': photo[0].photo_path
+        }
+
+        result_list.append(data);
+
+    return result_list
