@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import Depends, Form, status
 
 from api.dependencies import users_service
@@ -11,6 +11,7 @@ from typing import Annotated
 
 from deep_translator import GoogleTranslator
 
+import json
 
 program_router = APIRouter(
     prefix = '/program',
@@ -50,24 +51,38 @@ async def add_program(
 @program_router.get('/get_program')
 async def get_program(
     program_service: Annotated[ProgramService, Depends(program_service)],
-    forum_id: int = ...
+    request: Request,
+    forum_id: int = ...,
 ):
-    result = await program_service.get_program_filters(forum_id = forum_id)
-    result_list = []
+    redis_client = request.app.state.redis
 
-    for each in result:
+    if not redis_client:
+        return {"message": "Redis not initialized", "status_code": 500}
 
-        data = {
-            'id': each.id,
-            'name': each.name,
-            'time': each.time,
-            'title': each.title,
-            'title_eng': GoogleTranslator(source="auto", target="en").translate(each.title),
-            'text': each.text,
-            'text_eng': GoogleTranslator(sourse = "auto", target = "en").translate(each.text),
-            'forum_id': forum_id
-        }
+    redis_data = await redis_client.get('data')
 
-        result_list.append(data)
+    if not redis_data:
+        result = await program_service.get_program_filters(forum_id = forum_id)
+        result_list = []
+
+        for each in result:
+
+            data = {
+                'id': each.id,
+                'name': each.name,
+                'time': each.time,
+                'title': each.title,
+                'title_eng': GoogleTranslator(source="auto", target="en").translate(each.title),
+                'text': each.text,
+                'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text),
+                'forum_id': forum_id
+            }
+
+            result_list.append(data)
+        
+        await redis_client.set('data', json.dumps(result_list))
+        await redis_client.expire('data', 3600)
+    else:        
+        result_list = json.loads(redis_data)
 
     return result_list

@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import Depends, Form, status
 
 from typing import Annotated
@@ -12,6 +12,7 @@ from api.dependencies import users_service
 
 from deep_translator import GoogleTranslator
 
+import json
 
 forum_router = APIRouter(
     prefix='/forum',
@@ -45,29 +46,41 @@ async def add_new_forum(
 @forum_router.get('/get_forum')
 async def get_forum(
     forum_service: Annotated[ForumService, Depends(forum_service)],
+    request: Request,
     id: int = None
 ):
-    if not id:
-        filters = {}
+
+    redis_client = request.app.state.redis
+
+    redis_data = await redis_client.get('forum_data')
+
+    if not redis_data:
+        if not id:
+            filters = {}
+        else:
+            filters = {
+                'id': id
+            } 
+
+        result = await forum_service.get_forum_filters(filters = filters)
+        result_list = [
+
+        ]
+
+        for each in result:
+
+            data = {
+                "id": each.id,
+                "place": each.place,
+                'place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.place),
+                "year": each.year
+            }
+
+            result_list.append(data)
+        
+        await redis_client.set('forum_data', json.dumps(result_list))
+        await redis_client.expire('forum_data', 3600)
     else:
-        filters = {
-            'id': id
-        } 
-
-    result = await forum_service.get_forum_filters(filters = filters)
-    result_list = [
-
-    ]
-
-    for each in result:
-
-        data = {
-            "id": each.id,
-            "place": each.place,
-            'place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.place),
-            "year": each.year
-        }
-
-        result_list.append(data)
+        result_list = json.loads(redis_data)
 
     return result_list

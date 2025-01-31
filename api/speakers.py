@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import  Depends, Form, status
 from fastapi import UploadFile, File
 
@@ -17,6 +17,7 @@ import os
 
 from deep_translator import GoogleTranslator
 
+import json
 
 speakers_router = APIRouter(
     prefix = '/speakers',
@@ -83,27 +84,39 @@ async def add_new_speaker(
 async def get_speakers(
     speakers_service: Annotated[SpeakersService, Depends(speakers_service)],
     photo_service: Annotated[PhotoService, Depends(photo_service)],
+    request: Request,
     id: int = ...
 ):
-    filters = {
-        'forum_id': id
-    }
+    
+    redis_client = request.app.state.redis
 
-    result = await speakers_service.get_speakers_filters(filters = filters)
+    redis_data = await redis_client.get('speakers')
 
-    result_list = []
-    for each in result:
-        photo = await photo_service.get_photo(id = each.photo_id)
-
-        data = {
-            'id': each.id,
-            'name': each.name,
-            'name_eng': GoogleTranslator(source="auto", target="en").translate(each.name),
-            'work_place': each.work_place,
-            'work_place_eng': GoogleTranslator(source="auto", target="en").translate(each.work_place),
-            'photo_path': photo[0].photo_path
+    if not redis_data:
+        filters = {
+            'forum_id': id
         }
 
-        result_list.append(data);
+        result = await speakers_service.get_speakers_filters(filters = filters)
+
+        result_list = []
+        for each in result:
+            photo = await photo_service.get_photo(id = each.photo_id)
+
+            data = {
+                'id': each.id,
+                'name': each.name,
+                'name_eng': GoogleTranslator(source="auto", target="en").translate(each.name),
+                'work_place': each.work_place,
+                'work_place_eng': GoogleTranslator(source="auto", target="en").translate(each.work_place),
+                'photo_path': photo[0].photo_path
+            }
+
+            result_list.append(data)
+
+        await redis_client.set('speakers', json.dumps(result_list))
+        await redis_client.expire('speakers', 3600)
+    else:
+        result_list = json.loads(redis_data)
 
     return result_list

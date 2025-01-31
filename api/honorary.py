@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi import Depends, Form, status
 from fastapi import UploadFile, File
 
@@ -16,6 +16,8 @@ from typing import Annotated
 import os
 
 from deep_translator import GoogleTranslator
+
+import json
 
 
 hon_router = APIRouter(
@@ -83,23 +85,35 @@ async def add_honorary(
 async def get_honorary(
     honorary_service: Annotated[HonoraryService, Depends(honorary_service)],
     photo_service: Annotated[PhotoService, Depends(photo_service)],
+    request: Request,
     forum_id: int
 ):
-    result = await honorary_service.get_all_honorary(forum_id = forum_id)
     
-    result_list = []
+    redis_client = request.app.state.redis
 
-    for each in result:
-        photo = await photo_service.get_photo(id = each.photo_id)
+    redis_data = await redis_client.get('honorary')
 
-        data = {
-            'name': each.name,
-            'name_end': GoogleTranslator(source = "auto", target = "en").translate(each.name), 
-            'work_place': each.work_place,
-            'work_place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.work_place),
-            'photo_path': photo[0].photo_path
-        }
+    if not redis_data:
+        result = await honorary_service.get_all_honorary(forum_id = forum_id)
+        
+        result_list = []
 
-        result_list.append(data)
+        for each in result:
+            photo = await photo_service.get_photo(id = each.photo_id)
+
+            data = {
+                'name': each.name,
+                'name_end': GoogleTranslator(source = "auto", target = "en").translate(each.name), 
+                'work_place': each.work_place,
+                'work_place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.work_place),
+                'photo_path': photo[0].photo_path
+            }
+
+            result_list.append(data)
+
+        await redis_client.set('honorary', json.dumps(result_list))
+        await redis_client.expire('honorary', 3600)
+    else:
+        result_list = json.loads(redis_data)
 
     return result_list

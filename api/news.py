@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, UploadFile, Request
 from fastapi import Form, status, Depends
 from fastapi.responses import FileResponse
 
@@ -21,6 +21,8 @@ import os
 from datetime import datetime
 
 from deep_translator import GoogleTranslator
+
+import json
 
 
 news_router = APIRouter(
@@ -125,77 +127,99 @@ async def delete_new(
 async def get_all_news(
     news_service: Annotated[NewService, Depends(news_services)],
     photo_service: Annotated[PhotoService, Depends(photo_service)],
+    request: Request,
     id: int = None
 ):
     if not id:
-        all_news = await news_service.get_news(filters = {})
 
-        if not all_news:
-            return {
-                'message': 'No News in DB',
-                'status_code': status.HTTP_404_NOT_FOUND
-            }
+        redis_client = request.app.state.redis
 
-        result = []
+        redis_data = await redis_client.get('news_all')
 
-        for each in all_news:
-            if each.photo_id is None:
-                photo_get = "No Photo"
-            else:
-                photo_get = await photo_service.get_photo(id = each.photo_id)
-            
-            if photo_get == "No Photo":
-                photo_path = photo_get
-            else:
-                photo_path = photo_get[0].photo_path
+        if not redis_data:
+            all_news = await news_service.get_news(filters = {})
 
-            data = {
-                'id': each.id,
-                'title': each.title,
-                'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
-                'text': each.text,
-                'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
-                'date': each.date,
-                'photo_path': photo_path
-            }
+            if not all_news:
+                return {
+                    'message': 'No News in DB',
+                    'status_code': status.HTTP_404_NOT_FOUND
+                }
 
-            result.append(data)
-        
+            result = []
+
+            for each in all_news:
+                if each.photo_id is None:
+                    photo_get = "No Photo"
+                else:
+                    photo_get = await photo_service.get_photo(id = each.photo_id)
+                
+                if photo_get == "No Photo":
+                    photo_path = photo_get
+                else:
+                    photo_path = photo_get[0].photo_path
+
+                data = {
+                    'id': each.id,
+                    'title': each.title,
+                    'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
+                    'text': each.text,
+                    'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
+                    'date': each.date,
+                    'photo_path': photo_path
+                }
+
+                result.append(data)
+
+            await redis_client.set('news_all', json.dumps(result))
+            await redis_client.expire('news_all', 3600)
+        else:
+            result = json.loads(redis_data)
+
         return result[::-1]
     else:
         new = await news_service.get_news(filters = {'id': id})
-        
+            
         if not new:
             return {
                 'message': f'News with id: {id} not found',
                 'status_code': status.HTTP_404_NOT_FOUND
             }
         
-        result = []
+        redis_client = request.app.state.redis
 
-        for each in new:
-            if each.photo_id is None:
-                photo_get = "No Photo"
-            else:
-                photo_get = await photo_service.get_photo(id = each.photo_id)
+        redis_data = await redis_client.get(f'one_new_{id}')
             
-            if photo_get == "No Photo":
-                photo_path = photo_get
-            else:
-                photo_path = photo_get[0].photo_path
+        if not redis_data:
+            result = []
 
-            data = {
-                'id': each.id,
-                'title': each.title,
-                'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
-                'text': each.text,
-                'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
-                'date': each.date,
-                'photo_path': photo_path
-            }
+            for each in new:
+                if each.photo_id is None:
+                    photo_get = "No Photo"
+                else:
+                    photo_get = await photo_service.get_photo(id = each.photo_id)
+                    
+                if photo_get == "No Photo":
+                    photo_path = photo_get
+                else:
+                    photo_path = photo_get[0].photo_path
 
-            result.append(data)
-        
+                data = {
+                    'id': each.id,
+                    'title': each.title,
+                    'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
+                    'text': each.text,
+                    'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
+                    'date': each.date,
+                    'photo_path': photo_path
+                }
+
+                result.append(data)
+            
+            await redis_client.set(f'one_new_{id}', json.dumps(result))
+            await redis_client.expire(f'one_new_{id}', 3600)
+        else:
+            result = json.loads(redis_data)
+
         return result
 
 @news_router.get('/upload', response_model=dict)

@@ -17,12 +17,18 @@ from models.news import NewsModel
 from fastapi.middleware.cors import CORSMiddleware
 
 import json
+from redis.asyncio import Redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    app.state.redis = Redis(host='localhost', port=6379, decode_responses=True, db=0)
+
     await init_models()
     yield
+
+    await app.state.redis.close()
 
 app = FastAPI(
     lifespan = lifespan,
@@ -45,4 +51,3 @@ app.add_middleware (
     allow_methods = ["*"],
     allow_headers = ["*"]
 )
-
