@@ -30,6 +30,28 @@ news_router = APIRouter(
     tags = ['News']
 )
 
+def split_text(text, max_length=5000):
+    # Разделяет текст на части по максимальной длине
+    return [text[i:i + max_length] for i in range(0, len(text), max_length)]
+
+async def translate_text(text, source_lang='auto', target_lang='en'):
+    # Разделение текста на части
+    parts = split_text(text)
+    translated_parts = []
+
+    for part in parts:
+        try:
+            # Перевод каждой части
+            translated_part = GoogleTranslator(source=source_lang, target=target_lang).translate(part)
+            translated_parts.append(translated_part)
+        except Exception as e:
+            print(f"Error: {e}")
+            translated_parts.append(part)  # На случай ошибки возвращаем оригинальный текст
+
+    # Объединяем переведенные части обратно в один текст
+    return " ".join(translated_parts)
+
+
 @news_router.post('/add_new')
 async def add_new(
     users_service: Annotated[UserService, Depends(users_service)],
@@ -131,13 +153,11 @@ async def get_all_news(
     id: int = None
 ):
     if not id:
-
         redis_client = request.app.state.redis
-
         redis_data = await redis_client.get('news_all')
 
         if not redis_data:
-            all_news = await news_service.get_news(filters = {})
+            all_news = await news_service.get_news(filters={})
 
             if not all_news:
                 return {
@@ -151,19 +171,23 @@ async def get_all_news(
                 if each.photo_id is None:
                     photo_get = "No Photo"
                 else:
-                    photo_get = await photo_service.get_photo(id = each.photo_id)
-                
+                    photo_get = await photo_service.get_photo(id=each.photo_id)
+
                 if photo_get == "No Photo":
                     photo_path = photo_get
                 else:
                     photo_path = photo_get[0].photo_path
 
+                # Переводим заголовок и текст на английский, используя функцию translate_text
+                title_eng = await translate_text(each.title)
+                text_eng = await translate_text(each.text)
+
                 data = {
                     'id': each.id,
                     'title': each.title,
-                    'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
+                    'title_eng': title_eng, 
                     'text': each.text,
-                    'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
+                    'text_eng': text_eng, 
                     'date': each.date,
                     'photo_path': photo_path
                 }
@@ -177,18 +201,17 @@ async def get_all_news(
 
         return result[::-1]
     else:
-        new = await news_service.get_news(filters = {'id': id})
-            
+        new = await news_service.get_news(filters={'id': id})
+
         if not new:
             return {
                 'message': f'News with id: {id} not found',
                 'status_code': status.HTTP_404_NOT_FOUND
             }
-        
-        redis_client = request.app.state.redis
 
+        redis_client = request.app.state.redis
         redis_data = await redis_client.get(f'one_new_{id}')
-            
+
         if not redis_data:
             result = []
 
@@ -196,25 +219,29 @@ async def get_all_news(
                 if each.photo_id is None:
                     photo_get = "No Photo"
                 else:
-                    photo_get = await photo_service.get_photo(id = each.photo_id)
-                    
+                    photo_get = await photo_service.get_photo(id=each.photo_id)
+
                 if photo_get == "No Photo":
                     photo_path = photo_get
                 else:
                     photo_path = photo_get[0].photo_path
 
+                # Переводим заголовок и текст на английский, используя функцию translate_text
+                title_eng = await translate_text(each.title)
+                text_eng = await translate_text(each.text)
+
                 data = {
                     'id': each.id,
                     'title': each.title,
-                    'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
+                    'title_eng': title_eng, 
                     'text': each.text,
-                    'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
+                    'text_eng': text_eng, 
                     'date': each.date,
                     'photo_path': photo_path
                 }
 
                 result.append(data)
-            
+
             await redis_client.set(f'one_new_{id}', json.dumps(result))
             await redis_client.expire(f'one_new_{id}', 3600)
         else:
