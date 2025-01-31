@@ -9,10 +9,15 @@ from api.dependencies import forum_service
 from services.users import UserService
 from api.dependencies import users_service
 
+from googletrans import Translator
+
+
 forum_router = APIRouter(
     prefix='/forum',
     tags = ['Forum Routes']
 )
+
+translator = Translator()
 
 @forum_router.post('/add_new_forum')
 async def add_new_forum(
@@ -51,4 +56,18 @@ async def get_forum(
         } 
 
     result = await forum_service.get_forum_filters(filters = filters)
-    return result
+    result_list = [
+
+    ]
+
+    for each in result:
+
+        data = {
+            "id": each.id,
+            "place": each.place,
+            "year": each.year
+        }
+
+        result_list.append(data)
+
+    return result_list
