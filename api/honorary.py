@@ -94,9 +94,9 @@ async def get_honorary(
 
         data = {
             'name': each.name,
-            'name_end': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
+            'name_end': GoogleTranslator(source = "auto", target = "en").translate(each.name), 
             'work_place': each.work_place,
-            'work_place_eng': await translator.translate(each.work_place, dest = "en").text,
+            'work_place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.work_place),
             'photo_path': photo[0].photo_path
         }
 
