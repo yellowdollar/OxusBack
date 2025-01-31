@@ -9,15 +9,14 @@ from api.dependencies import forum_service
 from services.users import UserService
 from api.dependencies import users_service
 
-from googletrans import Translator
+
+from deep_translator import GoogleTranslator
 
 
 forum_router = APIRouter(
     prefix='/forum',
     tags = ['Forum Routes']
 )
-
-translator = Translator()
 
 @forum_router.post('/add_new_forum')
 async def add_new_forum(
@@ -65,6 +64,7 @@ async def get_forum(
         data = {
             "id": each.id,
             "place": each.place,
+            'place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.place),
             "year": each.year
         }
 

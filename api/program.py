@@ -9,6 +9,8 @@ from services.program import ProgramService
 
 from typing import Annotated
 
+from deep_translator import GoogleTranslator
+
 
 program_router = APIRouter(
     prefix = '/program',
@@ -51,4 +53,21 @@ async def get_program(
     forum_id: int = ...
 ):
     result = await program_service.get_program_filters(forum_id = forum_id)
-    return result
+    result_list = []
+
+    for each in result:
+
+        data = {
+            'id': each.id,
+            'name': each.name,
+            'time': each.time,
+            'title': each.title,
+            'title_eng': GoogleTranslator(source="auto", target="en").translate(each.title),
+            'text': each.text,
+            'text_eng': GoogleTranslator(sourse = "auto", target = "en").translate(each.text),
+            'forum_id': forum_id
+        }
+
+        result_list.append(data)
+
+    return result_list
