@@ -154,9 +154,9 @@ async def get_all_news(
             data = {
                 'id': each.id,
                 'title': each.title,
-                'title_eng': translator.translate(each.title, dest = "en").text, 
+                'title_eng': await translator.translate(each.title, dest = "en").text, 
                 'text': each.text,
-                'text_eng': translator.translate(each.text, dest = "en").text,
+                'text_eng': await translator.translate(each.text, dest = "en").text,
                 'date': each.date,
                 'photo_path': photo_path
             }
@@ -189,9 +189,9 @@ async def get_all_news(
             data = {
                 'id': each.id,
                 'title': each.title,
-                'title_eng': translator.translate(each.title, dest = "en").text, 
+                'title_eng': await translator.translate(each.title, dest = "en").text, 
                 'text': each.text,
-                'text_eng': translator.translate(each.text, dest = "en").text,
+                'text_eng': await translator.translate(each.text, dest = "en").text,
                 'date': each.date,
                 'photo_path': photo_path
             }

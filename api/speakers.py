@@ -100,9 +100,9 @@ async def get_speakers(
         data = {
             'id': each.id,
             'name': each.name,
-            'name_eng': translator.translate(each.name, dest = "en").text,
+            'name_eng': await translator.translate(each.name, dest = "en").text,
             'work_place': each.work_place,
-            'work_place_eng': translator.translate(each.work_place, dest = "en").text,
+            'work_place_eng': await translator.translate(each.work_place, dest = "en").text,
             'photo_path': photo[0].photo_path
         }
 
