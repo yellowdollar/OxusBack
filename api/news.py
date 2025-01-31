@@ -20,15 +20,13 @@ import os
 
 from datetime import datetime
 
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 
 news_router = APIRouter(
     prefix = '/news',
     tags = ['News']
 )
-
-translator = Translator()
 
 @news_router.post('/add_new')
 async def add_new(
@@ -154,9 +152,9 @@ async def get_all_news(
             data = {
                 'id': each.id,
                 'title': each.title,
-                'title_eng': await translator.translate(each.title, dest = "en").text, 
+                'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
                 'text': each.text,
-                'text_eng': await translator.translate(each.text, dest = "en").text,
+                'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
                 'date': each.date,
                 'photo_path': photo_path
             }
@@ -189,9 +187,9 @@ async def get_all_news(
             data = {
                 'id': each.id,
                 'title': each.title,
-                'title_eng': await translator.translate(each.title, dest = "en").text, 
+                'title_eng': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
                 'text': each.text,
-                'text_eng': await translator.translate(each.text, dest = "en").text,
+                'text_eng': GoogleTranslator(source = "auto", target = "en").translate(each.text), 
                 'date': each.date,
                 'photo_path': photo_path
             }

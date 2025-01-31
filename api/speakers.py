@@ -15,15 +15,13 @@ from typing import Annotated
 
 import os
 
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 
 speakers_router = APIRouter(
     prefix = '/speakers',
     tags = ['Speakers Routes']
 )
-
-translator = Translator()
 
 @speakers_router.post('/add_new_speaker')
 async def add_new_speaker(
@@ -100,9 +98,9 @@ async def get_speakers(
         data = {
             'id': each.id,
             'name': each.name,
-            'name_eng': await translator.translate(each.name, dest = "en").text,
+            'name_eng': GoogleTranslator(source="auto", target="en").translate(each.name),
             'work_place': each.work_place,
-            'work_place_eng': await translator.translate(each.work_place, dest = "en").text,
+            'work_place_eng': GoogleTranslator(source="auto", target="en").translate(each.work_place),
             'photo_path': photo[0].photo_path
         }
 

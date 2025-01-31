@@ -15,15 +15,13 @@ from typing import Annotated
 
 import os
 
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 
 hon_router = APIRouter(
     prefix = '/honorary',
     tags = ['Honorary Routes']
 )
-
-translator = Translator()
 
 @hon_router.post('/add_honorary')
 async def add_honorary(
@@ -96,7 +94,7 @@ async def get_honorary(
 
         data = {
             'name': each.name,
-            'name_end': await translator.translate(each.name, dest = "en").text,
+            'name_end': GoogleTranslator(source = "auto", target = "en").translate(each.title), 
             'work_place': each.work_place,
             'work_place_eng': await translator.translate(each.work_place, dest = "en").text,
             'photo_path': photo[0].photo_path
