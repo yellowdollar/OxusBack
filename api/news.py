@@ -30,13 +30,13 @@ news_router = APIRouter(
     tags = ['News']
 )
 
-def split_text(text, max_length=5000):
+def split_text(text, max_length=1000):
     # Разделяет текст на части по максимальной длине
     return [text[i:i + max_length] for i in range(0, len(text), max_length)]
 
 async def translate_text(text, source_lang='auto', target_lang='en'):
-    # Разделение текста на части
-    parts = split_text(text)
+    # Разделение текста на части, учитывая ограничение по символам (например, 1000)
+    parts = split_text(text, max_length=1000)
     translated_parts = []
 
     for part in parts:
@@ -45,12 +45,11 @@ async def translate_text(text, source_lang='auto', target_lang='en'):
             translated_part = GoogleTranslator(source=source_lang, target=target_lang).translate(part)
             translated_parts.append(translated_part)
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error during translation: {e}")
             translated_parts.append(part)  # На случай ошибки возвращаем оригинальный текст
 
     # Объединяем переведенные части обратно в один текст
     return " ".join(translated_parts)
-
 
 @news_router.post('/add_new')
 async def add_new(
@@ -178,7 +177,7 @@ async def get_all_news(
                 else:
                     photo_path = photo_get[0].photo_path
 
-                # Переводим заголовок и текст на английский, используя функцию translate_text
+                # Correct the translation by using title and text individually
                 title_eng = await translate_text(each.title)
                 text_eng = await translate_text(each.text)
 
@@ -226,7 +225,7 @@ async def get_all_news(
                 else:
                     photo_path = photo_get[0].photo_path
 
-                # Переводим заголовок и текст на английский, используя функцию translate_text
+                # Correct translation here too
                 title_eng = await translate_text(each.title)
                 text_eng = await translate_text(each.text)
 
@@ -248,6 +247,7 @@ async def get_all_news(
             result = json.loads(redis_data)
 
         return result
+
 
 @news_router.get('/upload', response_model=dict)
 async def upload(
