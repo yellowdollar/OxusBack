@@ -32,6 +32,7 @@ async def add_honorary(
     honorary_service: Annotated[HonoraryService, Depends(honorary_service)],
     token: str = Form(...),
     name: str = Form(...),
+    name_eng: str = Form(...),
     work_place: str = Form(...),
     work_place_eng: str = Form(...),
     forum_id: int = Form(...),
@@ -69,6 +70,7 @@ async def add_honorary(
 
     data = {
         'name': name,
+        'name_eng': name_eng,
         'work_place': work_place,
         'work_place_eng': work_place_eng,
         'forum_id': forum_id,
