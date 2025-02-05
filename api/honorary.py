@@ -33,6 +33,7 @@ async def add_honorary(
     token: str = Form(...),
     name: str = Form(...),
     work_place: str = Form(...),
+    work_place_eng: str = Form(...),
     forum_id: int = Form(...),
     photo: UploadFile = File(...)
 ):
@@ -69,6 +70,7 @@ async def add_honorary(
     data = {
         'name': name,
         'work_place': work_place,
+        'work_place_eng': work_place_eng,
         'forum_id': forum_id,
         'photo_id': photo_add[0].id
     }
