@@ -36,30 +36,25 @@ async def add_honorary(
     forum_id: int = Form(...),
     photo: UploadFile = File(...)
 ):
-    check_token = await users_service.check_cookie(token = token)
+    check_token = await users_service.check_cookie(token=token)
 
     if check_token['status_code'] != 200:
         return {
             'message': 'Not Authorized',
             'status_code': status.HTTP_401_UNAUTHORIZED
         }
-    
-    name_parts = name.split()
-    if len(name_parts) < 2:
-        return {
-            'message': 'Invalid name format. Expected "Surname Name".',
-            'status_code': status.HTTP_400_BAD_REQUEST
-        }
-    
-    surname_name = f"{name_parts[0]}_{name_parts[1]}"
-    
+
+    # Заменяем все пробелы в name на "_"
+    name_formatted = name.replace(" ", "_")
+
+    # Создаем путь к папке
     base_path = "mock/photos/honorary"
-    speaker_path = os.path.join(base_path, surname_name)
+    speaker_path = os.path.join(base_path, name_formatted)
 
     os.makedirs(speaker_path, exist_ok=True)
 
     _, file_extension = os.path.splitext(photo.filename)
-    new_filename = f"{surname_name}{file_extension}"
+    new_filename = f"{name_formatted}{file_extension}"
     file_path = os.path.join(speaker_path, new_filename)
 
     with open(file_path, "wb") as buffer:
@@ -78,7 +73,7 @@ async def add_honorary(
         'photo_id': photo_add[0].id
     }
 
-    result = await honorary_service.add_new_honorary(data = data)
+    result = await honorary_service.add_new_honorary(data=data)
     return result
 
 @hon_router.get('/get_honorary')
