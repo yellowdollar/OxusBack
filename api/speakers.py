@@ -31,7 +31,9 @@ async def add_new_speaker(
     photo_service: Annotated[PhotoService, Depends(photo_service)],
     token: str = Form(...),
     name: str = Form(...),
+    name_eng: str = Form(...),
     work_place: str = Form(...),
+    work_place_eng: str = Form(...),
     forum_id: int = Form(...),
     photo: UploadFile = File(...)
 ):
@@ -72,7 +74,9 @@ async def add_new_speaker(
 
     data = {
         'name': name,
+        'name_eng': name_eng,
         'work_place': work_place,
+        'work_place_eng': work_place_eng,
         'forum_id': forum_id,
         'photo_id': photo_add[0].id
     }
@@ -106,9 +110,9 @@ async def get_speakers(
             data = {
                 'id': each.id,
                 'name': each.name,
-                'name_eng': GoogleTranslator(source="auto", target="en").translate(each.name),
+                'name_eng': each.name_eng,
                 'work_place': each.work_place,
-                'work_place_eng': GoogleTranslator(source="auto", target="en").translate(each.work_place),
+                'work_place_eng': each.work_place_eng,
                 'photo_path': photo[0].photo_path
             }
 

@@ -30,27 +30,6 @@ news_router = APIRouter(
     tags = ['News']
 )
 
-def split_text(text, max_length=1000):
-    # Разделяет текст на части по максимальной длине
-    return [text[i:i + max_length] for i in range(0, len(text), max_length)]
-
-async def translate_text(text, source_lang='auto', target_lang='en'):
-    # Разделение текста на части, учитывая ограничение по символам (например, 1000)
-    parts = split_text(text, max_length=1000)
-    translated_parts = []
-
-    for part in parts:
-        try:
-            # Перевод каждой части
-            translated_part = GoogleTranslator(source=source_lang, target=target_lang).translate(part)
-            translated_parts.append(translated_part)
-        except Exception as e:
-            print(f"Error during translation: {e}")
-            translated_parts.append(part)  # На случай ошибки возвращаем оригинальный текст
-
-    # Объединяем переведенные части обратно в один текст
-    return " ".join(translated_parts)
-
 @news_router.post('/add_new')
 async def add_new(
     users_service: Annotated[UserService, Depends(users_service)],
@@ -58,7 +37,9 @@ async def add_new(
     photo_service: Annotated[PhotoService, Depends(photo_service)],
     token: str = Form(None),
     title: str = Form(None),
+    title_eng: str = Form(None),
     text: str = Form(None),
+    text_eng: str = Form(None),
     photo_files: List[UploadFile] = File(...)
 ):
     check = await users_service.check_cookie(token)
@@ -72,7 +53,9 @@ async def add_new(
     current_datetime = datetime.now().strftime("%d.%m.%Y %H:%M")
     data = {
         'title': title,
+        'title_eng': title_eng,
         'text': text,
+        'text_eng': text_eng,
         'date': current_datetime
     }
 
@@ -177,16 +160,12 @@ async def get_all_news(
                 else:
                     photo_path = photo_get[0].photo_path
 
-                # Correct the translation by using title and text individually
-                title_eng = await translate_text(each.title)
-                text_eng = await translate_text(each.text)
-
                 data = {
                     'id': each.id,
                     'title': each.title,
-                    'title_eng': title_eng, 
+                    'title_eng': each.title_eng, 
                     'text': each.text,
-                    'text_eng': text_eng, 
+                    'text_eng': each.text_eng, 
                     'date': each.date,
                     'photo_path': photo_path
                 }
@@ -225,16 +204,12 @@ async def get_all_news(
                 else:
                     photo_path = photo_get[0].photo_path
 
-                # Correct translation here too
-                title_eng = await translate_text(each.title)
-                text_eng = await translate_text(each.text)
-
                 data = {
                     'id': each.id,
                     'title': each.title,
-                    'title_eng': title_eng, 
+                    'title_eng': each.title_eng, 
                     'text': each.text,
-                    'text_eng': text_eng, 
+                    'text_eng': each.text_eng, 
                     'date': each.date,
                     'photo_path': photo_path
                 }
