@@ -25,7 +25,8 @@ async def add_new_forum(
     users_service: Annotated[UserService, Depends(users_service)],
     token: str = Form(...),
     year: str = Form(...),
-    place: str = Form(...)
+    place: str = Form(...),
+    place_eng: str = Form(...)
 ):
     
     token_check = await users_service.check_cookie(token = token)
@@ -37,7 +38,8 @@ async def add_new_forum(
 
     data = {
         'year': year,
-        'place': place
+        'place': place,
+        'place_eng': place_eng
     }
 
     result = await forum_repo.add_forum(data = data)
@@ -72,7 +74,7 @@ async def get_forum(
             data = {
                 "id": each.id,
                 "place": each.place,
-                'place_eng': GoogleTranslator(source = "auto", target = "en").translate(each.place),
+                'place_eng': each.place_eng,
                 "year": each.year
             }
 
