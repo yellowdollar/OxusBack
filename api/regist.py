@@ -12,10 +12,10 @@ from typing import Annotated
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_USERNAME = "yellowdollar55@gmail.com"
-SMTP_PASSWORD = "klot klsw tkaa iput"
+SMTP_USERNAME = "jewelrysanoatapplications@gmail.com"
+SMTP_PASSWORD = "qkfc wuzd zmvt elyf"
 
-RECIPIENT_EMAIL = "jewelrysanoattj@gmail.com"  # Куда отправлять уведомление
+RECIPIENT_EMAIL = "jewelrysanoattj@gmail.com"
 
 regist_router = APIRouter(
     prefix='/regist',
@@ -27,12 +27,11 @@ async def send_email_notification(name: str, surname: str, email: str, phone: st
     msg = EmailMessage()
     msg["From"] = SMTP_USERNAME
     msg["To"] = RECIPIENT_EMAIL
-    msg["Subject"] = "Новый пользователь отправил запрос на регистрацию"
+    msg["Subject"] = "Новый запрос на регистрацию"
 
     msg.set_content(
         f"Новая регистрация:\n\n"
-        f"Имя: {name}\n"
-        f"Фамилия: {surname}\n"
+        f"ФИО: {name} {surname}\n"
         f"Email: {email}\n"
         f"Телефон: {phone}\n"
         f"Дополнительно: {smth}"
