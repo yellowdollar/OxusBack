@@ -12,8 +12,8 @@ from typing import Annotated
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SMTP_USERNAME = "jewelrysanoatapplications@gmail.com"
-SMTP_PASSWORD = "qkfc wuzd zmvt elyf"
+SMTP_USERNAME = "jewelrysanoattj@gmail.com"
+SMTP_PASSWORD = "ibqv lwyq hace zauw"
 
 RECIPIENT_EMAIL = "jewelrysanoattj@gmail.com"
 
