@@ -22,7 +22,11 @@ regist_router = APIRouter(
     tags=['Regist Routes']
 )
 
-async def send_email_notification(name: str, surname: str, email: str, phone: str, smth: str):
+async def send_email_notification(
+    name: str, surname: str, 
+    email: str, job_title: str, 
+    phone: str, smth: str
+):
     """Функция отправки email при регистрации"""
     msg = EmailMessage()
     msg["From"] = SMTP_USERNAME
@@ -34,6 +38,7 @@ async def send_email_notification(name: str, surname: str, email: str, phone: st
         f"ФИО: {name} {surname}\n"
         f"Email: {email}\n"
         f"Телефон: {phone}\n"
+        f"Должность: {job_title}\n"
         f"Дополнительно: {smth}"
     )
 
@@ -53,6 +58,7 @@ async def add_regist(
     surname: str = Form(None),
     email: str = Form(None),
     phone: str = Form(None),
+    job_title: str = Form(None),
     smth: str = Form(None)
 ):
     data = {
@@ -60,13 +66,14 @@ async def add_regist(
         'surname': surname,
         'email': email,
         'phone': phone,
+        'job_title': job_title,
         'smth': smth
     }
 
     result = await regist_service.add_new_regist(data=data)
 
     # Отправляем email
-    await send_email_notification(name, surname, email, phone, smth)
+    await send_email_notification(name, surname, email, job_title, phone, smth)
 
     return {
         'status_code': status.HTTP_200_OK,

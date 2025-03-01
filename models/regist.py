@@ -10,4 +10,5 @@ class RegistModel(Base):
     surname: Mapped[str] = mapped_column(nullable = False)
     email: Mapped[str] = mapped_column(nullable = False)
     phone: Mapped[str] = mapped_column(nullable = False)
+    job_title: Mapped[str] = mapped_column(nullable = False)
     smth: Mapped[str] = mapped_column(nullable = False)
