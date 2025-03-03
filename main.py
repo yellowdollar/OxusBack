@@ -33,8 +33,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan = lifespan,
     root_path='/api',
-    openapi_url='/openapi.json',
-    docs_url='/docs',
+    openapi_url=None,
+    docs_url=None,
 )
 app.include_router(router = news_router)
 app.include_router(router = users_router)
