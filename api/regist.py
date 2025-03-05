@@ -39,7 +39,7 @@ async def send_email_notification(
         f"Email: {email}\n"
         f"Телефон: {phone}\n"
         f"Должность: {job_title}\n"
-        f"Дополнительно: {smth}"
+        f"Страна/Компания: {smth}"
     )
 
     await aiosmtplib.send(
